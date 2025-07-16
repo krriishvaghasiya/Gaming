@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$100 Million Spending Simulator - Fun Money Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #4285F4;
+            --secondary: #34A853;
+            --accent: #FBBC05;
+            --danger: #EA4335;
+            --purple: #9C27B0;
+            --light: #ffffff;
+            --dark: #202124;
+            --gray: #f8f9fa;
+            --shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        body {
+            background: linear-gradient(135deg, #e0f7fa 0%, #f5f5f5 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background Elements */
+        .bubbles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(66, 133, 244, 0.1);
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(0.2); opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% { transform: translateY(-20vh) scale(1.2); opacity: 0; }
+        }
+
+        /* Header with Fun Design */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: white;
+            padding: 2.5rem 1rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border-radius: 0 0 30px 30px;
+            margin-bottom: 120px;
+        }
+
+        header::before {
+            content: "💰💸💵";
+            position: absolute;
+            font-size: 15rem;
+            opacity: 0.05;
+            top: -20px;
+            left: -50px;
+            transform: rotate(-20deg);
+            z-index: 0;
+        }
+
+        header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.2rem;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        header p {
+            font-size: 1.4rem;
+            max-width: 800px;
+            margin: 0 auto;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Sticky Money Display */
+        .money-container {
+            background: var(--light);
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1.8rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            border: 4px solid var(--accent);
+            transition: var(--transition);
+        }
+
+        .money-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .money-label {
+            font-size: 1.5rem;
+            color: #5f6368;
+            margin-bottom: 0.8rem;
+            font-weight: 500;
+        }
+
+        .money-amount {
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--secondary);
+            letter-spacing: 1px;
+            transition: var(--transition);
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Items Grid */
+        .items-container {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.8rem;
+            margin: 1rem 0 3rem;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--dark);
+            background: linear-gradient(to right, var(--primary), var(--purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            padding: 0 2rem;
+        }
+
+        .section-title::after {
+            content: "✨🛒💳";
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2rem;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2.5rem;
+            margin-top: 2rem;
+        }
+
+        .item-card {
+            background: var(--light);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+            border: 3px solid #f1f1f1;
+        }
+
+        .item-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .item-image {
+            height: 220px;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(45deg, #e3f2fd, #f3e5f5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 4px solid var(--accent);
+        }
+
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .item-card:hover .item-image img {
+            transform: scale(1.05);
+        }
+
+        .item-content {
+            padding: 1.8rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-title {
+            font-size: 1.7rem;
+            margin-bottom: 0.8rem;
+            color: var(--dark);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .item-title i {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .item-price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--purple);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .item-price i {
+            color: var(--secondary);
+        }
+
+        .item-quantity {
+            font-size: 1.3rem;
+            margin-top: auto;
+            margin-bottom: 1.5rem;
+            color: #5f6368;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .buy-btn {
+            background: linear-gradient(45deg, var(--primary), var(--purple));
+            color: white;
+            border: none;
+            padding: 1.2rem;
+            border-radius: 12px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .buy-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--secondary), var(--accent));
+            opacity: 0;
+            transition: var(--transition);
+            z-index: -1;
+        }
+
+        .buy-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(66, 133, 244, 0.4);
+        }
+
+        .buy-btn:hover::before {
+            opacity: 1;
+        }
+
+        .buy-btn:disabled {
+            background: #e0e0e0;
+            color: #9e9e9e;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .buy-btn:disabled:hover::before {
+            opacity: 0;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin: 4rem 0;
+        }
+
+        .reset-btn {
+            background: linear-gradient(45deg, var(--accent), var(--danger));
+            color: white;
+            border: none;
+            padding: 1.4rem 3.5rem;
+            border-radius: 50px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 10px 25px rgba(251, 188, 5, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .reset-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--danger), var(--accent));
+            opacity: 0;
+            transition: var(--transition);
+            z-index: -1;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(251, 188, 5, 0.5);
+        }
+
+        .reset-btn:hover::before {
+            opacity: 1;
+        }
+
+        /* Ad Placeholders */
+        .adsense-placeholder {
+            background: white;
+            height: 150px;
+            margin: 4rem auto;
+            max-width: 970px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9e9e9e;
+            font-size: 1.5rem;
+            font-weight: 500;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            border: 2px dashed #e0e0e0;
+        }
+
+        .adsense-placeholder::before {
+            content: 'ADVERTISEMENT';
+            position: absolute;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f5f5f5;
+            z-index: 0;
+        }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: white;
+            text-align: center;
+            padding: 3rem 1rem;
+            margin-top: 3rem;
+            border-radius: 30px 30px 0 0;
+        }
+
+        footer p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* Fun Elements */
+        .fun-message {
+            text-align: center;
+            font-size: 1.3rem;
+            margin: 1rem 0 3rem;
+            color: #5f6368;
+            font-style: italic;
+        }
+
+        /* Animations */
+        @keyframes moneyDecrease {
+            0% { transform: scale(1); color: var(--secondary); }
+            50% { transform: scale(1.1); color: var(--danger); text-shadow: 0 0 15px rgba(234, 67, 53, 0.5); }
+            100% { transform: scale(1); color: var(--secondary); }
+        }
+
+        @keyframes coinFly {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-100px) scale(0.5); opacity: 0; }
+        }
+
+        .money-decrease {
+            animation: moneyDecrease 0.8s ease;
+        }
+
+        /* Floating Animation for Items */
+        @keyframes floatItem {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0); }
+        }
+
+        .item-card {
+            animation: floatItem 8s ease-in-out infinite;
+        }
+
+        .item-card:nth-child(2n) {
+            animation-delay: 1s;
+        }
+
+        .item-card:nth-child(3n) {
+            animation-delay: 2s;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .items-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2.8rem;
+            }
+            
+            .money-amount {
+                font-size: 3.2rem;
+            }
+            
+            .section-title {
+                font-size: 2.3rem;
+            }
+            
+            .item-title {
+                font-size: 1.5rem;
+            }
+            
+            .item-price {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 2.3rem;
+            }
+            
+            header p {
+                font-size: 1.1rem;
+            }
+            
+            .money-amount {
+                font-size: 2.5rem;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+                padding: 0 1rem;
+            }
+            
+            .items-grid {
+                grid-template-columns: 1fr;
+                gap: 2.5rem;
+            }
+            
+            .reset-btn {
+                width: 90%;
+                padding: 1.2rem;
+                font-size: 1.2rem;
+            }
+            
+            .money-container {
+                padding: 1.2rem;
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background Bubbles -->
+    <div class="bubbles" id="bubbles"></div>
+    
+    <!-- Header Section -->
+    <header>
+        <h1>💸 $100 MILLION SPENDING SIMULATOR</h1>
+        <p>Experience the billionaire lifestyle! How will you spend your fortune?</p>
+    </header>
+    
+    <!-- Sticky Money Display -->
+    <div class="money-container">
+        <div class="money-label">YOUR REMAINING BALANCE</div>
+        <div class="money-amount" id="money-display">$100,000,000</div>
+    </div>
+    
+    <!-- Top Ad Placeholder -->
+    <div class="adsense-placeholder"></div>
+    
+    <!-- Items Grid -->
+    <div class="items-container">
+        <h2 class="section-title">LUXURY ITEMS COLLECTION</h2>
+        <div class="fun-message">Click to buy items and watch your money decrease with fun animations!</div>
+        <div class="items-grid" id="items-grid">
+            <!-- Items will be populated by JavaScript -->
+        </div>
+    </div>
+    
+    <!-- Reset Button -->
+    <div class="controls">
+        <button class="reset-btn" id="reset-btn">
+            <i class="fas fa-sync-alt"></i> RESET & START OVER
+        </button>
+    </div>
+    
+    <!-- Bottom Ad Placeholder -->
+    <div class="adsense-placeholder"></div>
+    
+    <!-- Footer -->
+    <footer>
+        <p>$100 Million Spending Simulator &copy; 2023 | A fun way to experience the billionaire lifestyle</p>
+    </footer>
+    
+    <script>
+        // Create animated bubbles
+        function createBubbles() {
+            const bubblesContainer = document.getElementById('bubbles');
+            const bubbleCount = 20;
+            
+            for (let i = 0; i < bubbleCount; i++) {
+                const bubble = document.createElement('div');
+                bubble.classList.add('bubble');
+                
+                // Random size
+                const size = Math.random() * 120 + 30;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                
+                // Random position
+                bubble.style.left = `${Math.random() * 100}%`;
+                bubble.style.bottom = `-${size}px`;
+                
+                // Random animation delay and duration
+                const delay = Math.random() * 15;
+                const duration = 15 + Math.random() * 20;
+                bubble.style.animation = `float ${duration}s linear ${delay}s infinite`;
+                
+                bubblesContainer.appendChild(bubble);
+            }
+        }
+
+        // Initial state with dollars
+        const initialState = {
+            money: 100000000, // $100 Million
+            items: [
+                { 
+                    id: 1, 
+                    name: "Luxury Beach Villa", 
+                    image: "villa.png", 
+                    price: 2500000, 
+                    quantity: 0 
+                },
+                { 
+                    id: 2, 
+                    name: "Private Jet", 
+                    image: "jet.png", 
+                    price: 25000000, 
+                    quantity: 0 
+                },
+                { 
+                    id: 3, 
+                    name: "Diamond iPhone", 
+                    image: "iphone.png", 
+                    price: 50000, 
+                    quantity: 0 
+                },
+                { 
+                    id: 4, 
+                    name: "Luxury Supercar", 
+                    image: "supercar.png", 
+                    price: 500000, 
+                    quantity: 0 
+                },
+                { 
+                    id: 5, 
+                    name: "Gold Bars (100kg)", 
+                    image: "gold.png", 
+                    price: 6000000, 
+                    quantity: 0 
+                },
+                { 
+                    id: 6, 
+                    name: "Mega Yacht", 
+                    image: "yacht.png", 
+                    price: 15000000, 
+                    quantity: 0 
+                },
+                { 
+                    id: 7, 
+                    name: "Private Island", 
+                    image: "island.png", 
+                    price: 20000000, 
+                    quantity: 0 
+                },
+                { 
+                    id: 8, 
+                    name: "Rolex Daytona", 
+                    image: "rolex.png", 
+                    price: 500000, 
+                    quantity: 0 
+                },
+                { 
+                    id: 9, 
+                    name: "Helicopter", 
+                    image: "helicopter.png", 
+                    price: 3000000, 
+                    quantity: 0 
+                },
+                { 
+                    id: 10, 
+                    name: "Luxury Penthouse", 
+                    image: "penthouse.png", 
+                    price: 8000000, 
+                    quantity: 0 
+                },
+                { 
+                    id: 11, 
+                    name: "Rare Sports Car", 
+                    image: "sportscar.png", 
+                    price: 3000000, 
+                    quantity: 0 
+                },
+                { 
+                    id: 12, 
+                    name: "Exotic Animal", 
+                    image: "tiger.png", 
+                    price: 150000, 
+                    quantity: 0 
+                }
+            ]
+        };
+
+        // State management
+        let state = JSON.parse(JSON.stringify(initialState));
+
+        // Format money function
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        // Update money display
+        function updateMoneyDisplay() {
+            const moneyDisplay = document.getElementById('money-display');
+            moneyDisplay.textContent = formatMoney(state.money);
+            moneyDisplay.classList.add('money-decrease');
+            
+            setTimeout(() => {
+                moneyDisplay.classList.remove('money-decrease');
+            }, 800);
+        }
+
+        // Create coin animation
+        function createCoinAnimation(element) {
+            const rect = element.getBoundingClientRect();
+            const coins = 8;
+            
+            for (let i = 0; i < coins; i++) {
+                const coin = document.createElement('div');
+                coin.innerHTML = '💸';
+                coin.style.position = 'fixed';
+                coin.style.left = `${rect.left + rect.width/2}px`;
+                coin.style.top = `${rect.top}px`;
+                coin.style.fontSize = '2rem';
+                coin.style.zIndex = '1000';
+                coin.style.opacity = '0';
+                coin.style.transform = 'translateY(0) scale(1)';
+                coin.style.transition = 'all 0.8s ease-out';
+                document.body.appendChild(coin);
+                
+                // Animate coin
+                setTimeout(() => {
+                    coin.style.opacity = '1';
+                    coin.style.transform = `translateY(-${100 + Math.random() * 100}px) translateX(${(Math.random() - 0.5) * 200}px) rotate(${Math.random() * 360}deg) scale(1.5)`;
+                }, 10);
+                
+                // Remove coin after animation
+                setTimeout(() => {
+                    coin.style.opacity = '0';
+                    coin.style.transform = `translateY(-200px) translateX(${(Math.random() - 0.5) * 300}px) rotate(${Math.random() * 360}deg) scale(0.5)`;
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(coin);
+                    }, 800);
+                }, 800);
+            }
+        }
+
+        // Buy item function
+        function buyItem(itemId) {
+            const item = state.items.find(i => i.id === itemId);
+            
+            if (state.money >= item.price) {
+                state.money -= item.price;
+                item.quantity++;
+                
+                updateMoneyDisplay();
+                renderItems();
+                
+                // Add animation effect
+                const button = document.querySelector(`.buy-btn[data-id="${itemId}"]`);
+                
+                // Create flying coins animation
+                createCoinAnimation(button);
+            }
+        }
+
+        // Reset game
+        function resetGame() {
+            state = JSON.parse(JSON.stringify(initialState));
+            updateMoneyDisplay();
+            renderItems();
+            
+            // Animation for reset
+            const resetBtn = document.getElementById('reset-btn');
+            resetBtn.classList.add('pulse');
+            
+            setTimeout(() => {
+                resetBtn.classList.remove('pulse');
+            }, 500);
+        }
+
+        // Render items
+        function renderItems() {
+            const itemsGrid = document.getElementById('items-grid');
+            itemsGrid.innerHTML = '';
+            
+            state.items.forEach(item => {
+                const isDisabled = state.money < item.price;
+                
+                const itemCard = document.createElement('div');
+                itemCard.className = 'item-card';
+                itemCard.innerHTML = `
+                    <div class="item-image">
+                        <img src="https://images.unsplash.com/photo-${getImageCode(item.id)}?auto=format&fit=crop&w=800&h=600&q=80" alt="${item.name}">
+                    </div>
+                    <div class="item-content">
+                        <h3 class="item-title">
+                            <i class="fas fa-gem"></i> ${item.name}
+                        </h3>
+                        <div class="item-price">
+                            <i class="fas fa-tag"></i> ${formatMoney(item.price)}
+                        </div>
+                        <div class="item-quantity">
+                            <i class="fas fa-shopping-cart"></i> Purchased: ${item.quantity}
+                        </div>
+                        <button 
+                            class="buy-btn" 
+                            data-id="${item.id}"
+                            ${isDisabled ? 'disabled' : ''}
+                        >
+                            <i class="fas fa-cart-plus"></i> Buy Now
+                        </button>
+                    </div>
+                `;
+                
+                itemsGrid.appendChild(itemCard);
+            });
+            
+            // Add event listeners to all buy buttons
+            document.querySelectorAll('.buy-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const itemId = parseInt(button.getAttribute('data-id'));
+                    buyItem(itemId);
+                });
+            });
+        }
+
+        // Get image code for Unsplash
+        function getImageCode(id) {
+            const images = [
+                "1613977257365-aaae5a9817ff", // Villa
+                "1557804506-669a67965ba0",     // Jet
+                "1605236453806-6ff36851218e",  // iPhone
+                "1503376780353-7e6692767b70",  // Supercar
+                "1620336655055-bd11a4a7a0b8",  // Gold
+                "1504307651254-35680f356dfd",  // Yacht
+                "1545579133-99bb5ab189bd",     // Island
+                "1522312346375-d1a52e2b99b3",  // Rolex
+                "1520466809213-7b9a56adcd45",  // Helicopter
+                "1615529162924-f8605388463a",  // Penthouse
+                "1580273916550-e323be2ae537",  // Sports car
+                "1546182990-dffeafbe841d"      // Tiger
+            ];
+            return images[id-1];
+        }
+
+        // Initialize the game
+        document.addEventListener('DOMContentLoaded', () => {
+            createBubbles();
+            updateMoneyDisplay();
+            renderItems();
+            
+            // Add event listener to reset button
+            document.getElementById('reset-btn').addEventListener('click', resetGame);
+        });
+    </script>
+</body>
+</html>
